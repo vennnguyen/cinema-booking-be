@@ -7,15 +7,14 @@
     "skipLibCheck": true,
     "outDir": "dist",
     "rootDir": "src",
-    "baseUrl":".",
+    "baseUrl": ".",
     "paths": {
       "config/*": ["./src/config/*"],
-       "controllers/*": ["./src/controllers/*"],
-        "models/*": ["./src/models/*"],
-         "routes/*": ["./src/routes/*"],
-         "services/*": ["./src/services/*"],
- 
-    },
-    "typeRoots": ["./src/types", "./node_modules/@types"]
+      "controllers/*": ["./src/controllers/*"],
+      "models/*": ["./src/models/*"],
+      "routes/*": ["./src/routes/*"],
+      "services/*": ["./src/services/*"]
+    }
   },
+  "exclude": ["node_modules", "prisma.config.ts"]
 }
