@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model cinema {
@@ -40,16 +41,24 @@ model combodetail {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model movie {
-  movieId      Int        @id @default(autoincrement())
-  movieTypeId  Int
-  movieName    String     @db.VarChar(200)
-  description  String?    @db.Text
-  image        String?    @db.VarChar(500)
-  videoTrailer String?    @db.VarChar(500)
-  duration     Int
-  status       Boolean    @default(true)
-  movietype    movietype  @relation(fields: [movieTypeId], references: [movieTypeId], onDelete: NoAction, onUpdate: NoAction, map: "fk_movie_movietype")
-  showtime     showtime[]
+  movieId        Int        @id @default(autoincrement())
+  movieTypeId    Int
+  movieName      String     @db.VarChar(200)
+  description    String?    @db.Text
+  age            Int?
+  imageLandscape String?    @db.VarChar(500)
+  imagePortrait  String?    @db.VarChar(500)
+  rate           Float?
+  totalVotes     Int?
+  startDate      DateTime?  @db.DateTime(0)
+  endDate        DateTime?  @db.DateTime(0)
+  slug           String?    @db.VarChar(100)
+  trailer        String?    @db.VarChar(500)
+  duration       Int
+  createdAt      DateTime?  @default(now()) @db.DateTime(0)
+  status         Boolean    @default(true)
+  movietype      movietype  @relation(fields: [movieTypeId], references: [movieTypeId], onDelete: NoAction, onUpdate: NoAction, map: "fk_movie_movietype")
+  showtime       showtime[]
 
   @@index([movieTypeId], map: "fk_movie_movietype")
 }
