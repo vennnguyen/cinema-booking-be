@@ -230,6 +230,7 @@ model user {
   updatedAt   DateTime  @default(now()) @db.DateTime(0)
   status      Boolean   @default(true)
   order       order[]
+  session     Session[]
 }
 
 model payment {
@@ -294,6 +295,21 @@ model producttype {
   description     String?   @db.Text
   status          Boolean   @default(true)
   product         product[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model Session {
+  sessionId    Int      @id @default(autoincrement())
+  userId       Int
+  refreshToken String   @unique(map: "uq_session_token") @db.VarChar(500)
+  expiresAt    DateTime @db.DateTime(0)
+  createdAt    DateTime @default(now()) @db.DateTime(0)
+  status       Boolean  @default(true)
+  user         user     @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "fk_session_user")
+
+  @@index([expiresAt], map: "idx_session_expires")
+  @@index([userId], map: "idx_session_user")
+  @@map("session")
 }
 
 enum order_paymentStatus {

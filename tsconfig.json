@@ -7,8 +7,10 @@
     "skipLibCheck": true,
     "outDir": "dist",
     "rootDir": "src",
-    "baseUrl": ".",
+    "baseUrl": ".", 
+    "ignoreDeprecations": "6.0",
     "paths": {
+       "@/*": ["src/*"],
       "config/*": ["./src/config/*"],
       "controllers/*": ["./src/controllers/*"],
       "models/*": ["./src/models/*"],

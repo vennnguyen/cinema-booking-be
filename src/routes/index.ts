@@ -11,9 +11,9 @@ router.use("/products", productRoutes);
 router.use("/showtimes", showtimeRoutes);
 router.use("/booking", bookingRoutes);
 router.use("/seat", seatRoutes);
-router.use("/combo", authRoutes);
+router.use("/combo", comboRoutes);
 
 //auth
-router.use("/auth", )
+router.use("/auth", authRoutes)
 
 export default router;

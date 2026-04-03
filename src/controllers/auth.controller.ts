@@ -1,11 +1,61 @@
 import { Request, Response } from "express";
+import bcrypt from 'bcrypt'
+import { findUserByEmail, isEmailExist, postRefreshToken, postUser } from "services/auth.service";
+import jwt from 'jsonwebtoken'
+import crypto from 'crypto'
+import "dotenv/config";
+const ACCESS_TOKEN_TTL = "30m";
+const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000 //14 ngày
 
 const signUpController = async (req: Request, res: Response) => {
    try {
      const {email, password, fullName} = req.body
-     if(!email || )
+     if(!email || !password || !fullName) {
+        return res.status(401).json({message: "Không thể thiếu email, password, fullName"})
+     }
+     const duplicate = await isEmailExist(email)
+     if(duplicate) return res.status(409).json({message: "Email đã tồn tại"}) 
+        //mã hóa password
+    const hashedPassword = await bcrypt.hash(password, 10) // 10 là salt
+    await postUser(email, hashedPassword, fullName)
+
+    return res.status(201).json({ message: "Đăng ký thành công" });
    } catch (error) {
-    
+     console.error("Lỗi khi đăng kí", error);
+    return res.status(500).json({ message: "Lỗi server" });
    }
 }
-export {signUpController}
+
+const signInController =  async (req: Request, res: Response) => {
+   try {
+      const {email, password} = req.body
+      if(!email || !password) {
+         return res.status(400).json({message: "Thiếu email hoặc password"})
+      }
+
+      const user = await findUserByEmail(email)
+      if(!user) return res.status(401).json({messaege: "Email hoặc mật khẩu không đúng"})
+
+      const passwordCorrect = await bcrypt.compare(password, user.password)
+      if(!passwordCorrect) return res.status(401).json({messaege: "Email hoặc mật khẩu không đúng"})
+
+      const accessToken = jwt.sign({userId: user.userId}, process.env.ACCESS_TOKEN_SECRET as string, {expiresIn : ACCESS_TOKEN_TTL})
+
+      const refreshToken = crypto.randomBytes(64).toString('hex')
+
+      await postRefreshToken(user.userId, refreshToken, REFRESH_TOKEN_TTL)
+      res.cookie('refreshToken', refreshToken, {
+         httpOnly:true,
+         secure:true,
+         sameSite:"none",
+         maxAge:REFRESH_TOKEN_TTL
+      })
+
+      return res.status(200).json({message: `User ${user.fullName} đã đăng nhập`, accessToken})
+   } catch (error) {
+      console.error("Lỗi khi đăng nhập", error);
+    return res.status(500).json({ message: "Lỗi server" });
+   }
+
+}
+export {signUpController, signInController}
