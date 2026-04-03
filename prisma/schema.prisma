@@ -24,9 +24,8 @@ model combo {
   description String?       @db.Text
   price       Decimal       @db.Decimal(12, 2)
   status      Boolean       @default(true)
+  combodetail combodetail[]
   orderdetail orderdetail[]
-
-  @@index([comboId], map: "idx_combodetail_combo")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -224,7 +223,6 @@ model user {
   phoneNumber String?   @db.VarChar(20)
   dateOfBirth DateTime? @db.Date
   sex         user_sex?
-  username    String    @unique(map: "username") @db.VarChar(100)
   password    String    @db.VarChar(255)
   email       String    @unique(map: "email") @db.VarChar(150)
   role        user_role @default(USER)
@@ -264,6 +262,40 @@ model showtimeseat {
   @@index([status], map: "idx_showtimeseat_status")
 }
 
+model combodetail {
+  comboDetailId Int     @id @default(autoincrement())
+  comboId       Int
+  productId     Int
+  quantity      Int     @default(1)
+  status        Boolean @default(true)
+  combo         combo   @relation(fields: [comboId], references: [comboId], onDelete: NoAction, onUpdate: NoAction, map: "fk_combodetail_combo")
+  product       product @relation(fields: [productId], references: [productId], onDelete: NoAction, onUpdate: NoAction, map: "fk_combodetail_product")
+
+  @@index([productId], map: "fk_combodetail_product")
+  @@index([comboId], map: "idx_combodetail_combo")
+}
+
+model product {
+  productId     Int           @id @default(autoincrement())
+  productTypeId Int
+  name          String        @db.VarChar(200)
+  image         String?       @db.VarChar(500)
+  price         Decimal       @default(0.00) @db.Decimal(12, 2)
+  status        Boolean       @default(true)
+  combodetail   combodetail[]
+  producttype   producttype   @relation(fields: [productTypeId], references: [productTypeId], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_producttype")
+
+  @@index([productTypeId], map: "idx_product_type")
+}
+
+model producttype {
+  productTypeId   Int       @id @default(autoincrement())
+  productTypeName String    @db.VarChar(100)
+  description     String?   @db.Text
+  status          Boolean   @default(true)
+  product         product[]
+}
+
 enum order_paymentStatus {
   PENDING
   PAID
@@ -283,12 +315,6 @@ enum user_sex {
   Other
 }
 
-enum user_role {
-  ADMIN
-  USER
-  STAFF
-}
-
 enum payment_method {
   CASH
   MOMO
@@ -301,4 +327,9 @@ enum showtimeseat_status {
   AVAILABLE
   HOLDING
   BOOKED
+}
+
+enum user_role {
+  ADMIN
+  USER
 }

@@ -4,12 +4,16 @@ import showtimeRoutes from "./showtime.route";
 import bookingRoutes from "./booking.route";
 import seatRoutes from "./seat.route";
 import comboRoutes from "./combo.route";
+import authRoutes from "./auth.route";
 const router = express.Router();
 
 router.use("/products", productRoutes);
 router.use("/showtimes", showtimeRoutes);
 router.use("/booking", bookingRoutes);
 router.use("/seat", seatRoutes);
-router.use("/combo", comboRoutes);
+router.use("/combo", authRoutes);
+
+//auth
+router.use("/auth", )
 
 export default router;
