@@ -6,17 +6,18 @@ import seatRoutes from "./seat.route";
 import comboRoutes from "./combo.route";
 
 import userRoutes from "./user.route";
+import { protectedRoute } from "@/middlewares/auth.middleware";
 const router = express.Router();
 
 router.use("/products", productRoutes);
 router.use("/showtimes", showtimeRoutes);
-router.use("/booking", bookingRoutes);
-router.use("/seat", seatRoutes);
+
 router.use("/combo", comboRoutes);
+// protected routes
+router.use("/booking", protectedRoute, bookingRoutes);
+router.use("/seat", protectedRoute, seatRoutes);
 
-//auth
 
-
-router.use("/me", userRoutes)
+router.use("/me", protectedRoute,userRoutes)
 
 export default router;

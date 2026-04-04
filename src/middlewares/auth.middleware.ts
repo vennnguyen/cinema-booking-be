@@ -23,8 +23,6 @@ export const protectedRoute = (req:Request, res:Response, next: NextFunction) =>
             //tìm user
             const user = await findUserById(payload.userId)
             if(!user) return res.status(404).json({message: "Người dùng không tồn tại"})
-
-
             //trả user vào req
             req.user = user
            next()

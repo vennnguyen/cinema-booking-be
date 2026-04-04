@@ -23,9 +23,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 
-// routes
 app.use("/api/auth", authRoutes); 
-app.use(protectedRoute)
+// app.use(protectedRoute)
+// routes
+
 app.use("/api", routes);
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);

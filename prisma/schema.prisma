@@ -221,7 +221,7 @@ model user {
   userId      Int       @id @default(autoincrement())
   fullName    String    @db.VarChar(150)
   phoneNumber String?   @db.VarChar(20)
-  dateOfBirth DateTime? @db.Date
+  dateOfBirth String?   @db.VarChar(150)
   sex         user_sex?
   password    String    @db.VarChar(255)
   email       String    @unique(map: "email") @db.VarChar(150)

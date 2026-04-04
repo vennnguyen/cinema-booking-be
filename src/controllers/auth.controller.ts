@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import bcrypt from 'bcrypt'
-import { deleteSession, findUserByEmail, isEmailExist, postRefreshToken, postUser } from "services/auth.service";
+import { deleteSession, findSession, findUserByEmail, isEmailExist, postRefreshToken, postUser } from "services/auth.service";
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import "dotenv/config";
@@ -9,15 +9,17 @@ const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000 //14 ngày
 
 const signUpController = async (req: Request, res: Response) => {
    try {
-     const {email, password, fullName} = req.body
+     const {email, password, fullName, phone, birthDay} = req.body
      if(!email || !password || !fullName) {
         return res.status(401).json({message: "Không thể thiếu email, password, fullName"})
      }
      const duplicate = await isEmailExist(email)
-     if(duplicate) return res.status(409).json({message: "Email đã tồn tại"}) 
+     if(duplicate) {
+      return res.status(409).json({message: "Email đã tồn tại"}) 
+     }
         //mã hóa password
     const hashedPassword = await bcrypt.hash(password, 10) // 10 là salt
-    await postUser(email, hashedPassword, fullName)
+    await postUser(email, hashedPassword, fullName, phone, birthDay)
 
     return res.status(201).json({ message: "Đăng ký thành công" });
    } catch (error) {
@@ -28,12 +30,12 @@ const signUpController = async (req: Request, res: Response) => {
 
 const signInController =  async (req: Request, res: Response) => {
    try {
-      const {email, password} = req.body
-      if(!email || !password) {
+      const {username, password} = req.body
+      if(!username || !password) {
          return res.status(400).json({message: "Thiếu email hoặc password"})
       }
 
-      const user = await findUserByEmail(email)
+      const user = await findUserByEmail(username)
       if(!user) return res.status(401).json({messaege: "Email hoặc mật khẩu không đúng"})
 
       const passwordCorrect = await bcrypt.compare(password, user.password)
@@ -73,4 +75,37 @@ const signOutController =  async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Lỗi server" });
    }
 }
-export {signUpController, signInController,signOutController}
+const refreshTokenController = async (req: Request, res: Response) => {
+  try {
+    // lấy refresh token từ cookies
+    const token = req.cookies?.refreshToken;
+    if (!token) {
+      return res.status(401).json({ message: "Lỗi không có token" });
+    }
+    // so với refresh token trong db
+    const session = await findSession(token);
+    if (!session) {
+      return res
+        .status(403)
+        .json({ message: "Token không hợp lệ hoặc hết hạn" });
+    }
+    // kiểm tra hạn sd
+    if (session.expiresAt < new Date()) {
+      return res.status(403).json({ message: "Token hết hạn" });
+    }
+    //tạo access mới
+    const accessToken = jwt.sign(
+      { userId: session.userId },
+      process.env.ACCESS_TOKEN_SECRET as string,
+      {
+        expiresIn: ACCESS_TOKEN_TTL,
+      },
+    );
+    //trả về client
+    return res.status(200).json({ accessToken });
+  } catch (error) {
+    console.error("Lỗi khi gọi refresh token ", error);
+    return res.status(500).json({ message: "Lỗi hệ thống" });
+  }
+};
+export {signUpController, signInController,signOutController,refreshTokenController}

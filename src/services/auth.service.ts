@@ -28,12 +28,12 @@ const findUserById = async (id: number) => {
   return userWithoutPassword; 
 };
 
-const postUser = async (email: string, password: string, fullName: string) => {
+const postUser = async (email: string, password: string, fullName: string, phone:string, birthDay:string) => {
   const user = await prisma.user.create({
     data: {
       email,
       password,
-      fullName
+      fullName,phoneNumber:phone, dateOfBirth:birthDay
     }
   });
 
@@ -49,6 +49,15 @@ const postRefreshToken = async(userId: number, refreshToken:string, REFRESH_TOKE
     }
   })
 }
+const findSession = async (token:string) => {
+  const user = await prisma.session.findFirst({
+    where: {
+      refreshToken: token
+    }
+  })
+  
+  return user
+}
 
 const deleteSession = async(token:string) => {
   return await prisma.session.delete({
@@ -57,4 +66,4 @@ const deleteSession = async(token:string) => {
     }
   })
 }
-export {isEmailExist,postUser,findUserByEmail, postRefreshToken, deleteSession,findUserById}
+export {isEmailExist,postUser,findUserByEmail, postRefreshToken, deleteSession,findUserById,findSession}
