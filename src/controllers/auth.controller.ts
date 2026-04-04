@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import bcrypt from 'bcrypt'
-import { findUserByEmail, isEmailExist, postRefreshToken, postUser } from "services/auth.service";
+import { deleteSession, findUserByEmail, isEmailExist, postRefreshToken, postUser } from "services/auth.service";
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import "dotenv/config";
@@ -58,4 +58,19 @@ const signInController =  async (req: Request, res: Response) => {
    }
 
 }
-export {signUpController, signInController}
+
+const signOutController =  async (req: Request, res: Response) => {
+   try {
+      // láy refreshToken trong cookie
+      const token = req.cookies?.refreshToken
+      if(token){
+         await deleteSession(token)
+         res.clearCookie("refreshToken")
+      }
+      return res.status(204)
+   } catch (error) {
+       console.error("Lỗi khi đăng xuát", error);
+    return res.status(500).json({ message: "Lỗi server" });
+   }
+}
+export {signUpController, signInController,signOutController}

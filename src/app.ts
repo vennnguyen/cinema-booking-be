@@ -2,6 +2,9 @@ import express, { Request, Response } from "express";
 import "dotenv/config";
 import routes from "./routes";
 import cors from "cors";
+import cookieParser from 'cookie-parser'
+import { protectedRoute } from "./middlewares/auth.middleware";
+import authRoutes from 'routes/auth.route'
 const app = express();
 const PORT = process.env.PORT || 8080;
 //Lỗi CORS
@@ -18,8 +21,11 @@ app.use(express.static("public"));
 // middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser())
 
 // routes
+app.use("/api/auth", authRoutes); 
+app.use(protectedRoute)
 app.use("/api", routes);
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);

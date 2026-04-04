@@ -9,14 +9,19 @@
     "rootDir": "src",
     "baseUrl": ".", 
     "ignoreDeprecations": "6.0",
+     "typeRoots": ["./src/types", "./node_modules/@types"],
     "paths": {
        "@/*": ["src/*"],
+       
       "config/*": ["./src/config/*"],
       "controllers/*": ["./src/controllers/*"],
       "models/*": ["./src/models/*"],
       "routes/*": ["./src/routes/*"],
       "services/*": ["./src/services/*"]
-    }
+    },
   },
+  
+"include": ["src/**/*","src/types/**/*"],
+"files": ["src/types/index.d.ts"],
   "exclude": ["node_modules", "prisma.config.ts"]
 }

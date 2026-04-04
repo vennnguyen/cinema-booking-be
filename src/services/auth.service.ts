@@ -10,12 +10,23 @@ const isEmailExist = async(email:string) => {
     return false
 }
 const findUserByEmail = async(email:string) => {
-  return prisma.user.findUnique({
+  return await prisma.user.findUnique({
     where :{
       email
     }
   })
 }
+
+const findUserById = async (id: number) => {
+  const user = await prisma.user.findUnique({
+    where: { userId: id },
+  });
+
+  if (!user) return null;
+
+  const { password, ...userWithoutPassword } = user;
+  return userWithoutPassword; 
+};
 
 const postUser = async (email: string, password: string, fullName: string) => {
   const user = await prisma.user.create({
@@ -38,4 +49,12 @@ const postRefreshToken = async(userId: number, refreshToken:string, REFRESH_TOKE
     }
   })
 }
-export {isEmailExist,postUser,findUserByEmail, postRefreshToken}
+
+const deleteSession = async(token:string) => {
+  return await prisma.session.delete({
+    where :{
+      refreshToken:token
+    }
+  })
+}
+export {isEmailExist,postUser,findUserByEmail, postRefreshToken, deleteSession,findUserById}
