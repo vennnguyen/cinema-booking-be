@@ -7,6 +7,7 @@ import comboRoutes from "./combo.route";
 
 import userRoutes from "./user.route";
 import { protectedRoute } from "@/middlewares/auth.middleware";
+import paymentRoutes from "./payment.route";
 const router = express.Router();
 
 router.use("/products", productRoutes);
@@ -19,5 +20,6 @@ router.use("/seat", protectedRoute, seatRoutes);
 
 
 router.use("/me", protectedRoute,userRoutes)
+router.use("/payment", paymentRoutes)
 
 export default router;
