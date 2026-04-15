@@ -13,15 +13,18 @@ const formatVNPayDate = (dateStr: string) => {
 
 
 const createPayment = async (req: Request, res: Response) => {
-    const { orderId } = req.body;
-    const order = await prisma.order.findUnique({
-        where:{
-            orderId
-        }, include :{
-            user:true
-        }
-    })
-    if(!order) return res.status(401).json({message: "Không tìm thấy đơn hàng"})
+    const order = await prisma.order.findFirst({
+  orderBy: {
+    orderId: "desc"
+  },
+  include: {
+    user: true
+  }
+});
+
+if (!order) {
+  return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
+}
   const vnpay = new VNPay({
     tmnCode: '13H9HAMI',
     secureSecret: 'V61ZAECBFQDFG6C7KQAY7FDYN20IVKC0',
@@ -71,6 +74,14 @@ const vnPayCallBack = async(req: Request, res: Response) => {
         createdAt: new Date()
 
     }})
+    const updateOrder = await prisma.order.update({
+        where: {
+            orderId: Number(orderId)
+        },
+        data: {
+            paymentStatus:"PAID"
+        }
+    })
     return res.status(201).json({
         message: "Thanh toán thành công",
         data: newPayment
