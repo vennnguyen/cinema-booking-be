@@ -57,7 +57,7 @@ const vnPayCallBack = async(req: Request, res: Response) => {
     if(vnp_ResponseCode !== '00') {
         throw new Error('Thanh toán thất bại')
     }
-    const orderId = vnp_TxnRef?.toString()[0];
+    const orderId = vnp_TxnRef?.toString().split("_")[0];
     const findOderId = await prisma.order.findUnique({
         where: {
             orderId: Number(orderId)

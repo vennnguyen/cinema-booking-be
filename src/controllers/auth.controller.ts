@@ -4,14 +4,17 @@ import { deleteSession, findSession, findUserByEmail, isEmailExist, postRefreshT
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import "dotenv/config";
+import { log } from "console";
+import { BADHINTS } from "dns/promises";
 const ACCESS_TOKEN_TTL = "30m";
 const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000 //14 ngày
 
 const signUpController = async (req: Request, res: Response) => {
    try {
      const {email, password, fullName, phone, birthDay} = req.body
-     if(!email || !password || !fullName) {
-        return res.status(401).json({message: "Không thể thiếu email, password, fullName"})
+
+     if(!email || !password || !fullName || !phone || !birthDay ) {
+        return res.status(401).json({message: "Không thể thiếu email, password, fullName, phone, birthDay"})
      }
      const duplicate = await isEmailExist(email)
      if(duplicate) {

@@ -29,11 +29,12 @@ const findUserById = async (id: number) => {
 };
 
 const postUser = async (email: string, password: string, fullName: string, phone:string, birthDay:string) => {
+  
   const user = await prisma.user.create({
     data: {
       email,
       password,
-      fullName,phoneNumber:phone, dateOfBirth:birthDay
+      fullName,phoneNumber:phone, dateOfBirth: new Date(birthDay)
     }
   });
 
