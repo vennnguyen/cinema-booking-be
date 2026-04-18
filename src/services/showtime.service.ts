@@ -24,4 +24,30 @@ const getShowTimeBySlugService = async (slug: string) => {
 
   return data;
 };
-export { getShowTimeBySlugService };
+ const getDatesByMovieCinemaService = async (movieId: number, cinemaId: number) => {
+  const rows = await prisma.showtime.findMany({
+    where: {
+      movieId,
+      status: true,
+      room: { cinemaId }
+    },
+    select: { releaseDate: true },
+    distinct: ["releaseDate"],
+    orderBy: { releaseDate: "asc" }
+  });
+  return rows.map((r) => r.releaseDate);
+};
+
+ const getShowtimesService = async (movieId: number, cinemaId: number, date: string) => {
+  return await prisma.showtime.findMany({
+    where: {
+      movieId,
+      status: true,
+      releaseDate: new Date(date),
+      room: { cinemaId }
+    },
+    select: { showId: true, startTime: true },
+    orderBy: { startTime: "asc" }
+  });
+};
+export { getShowTimeBySlugService,getShowtimesService,getDatesByMovieCinemaService };
