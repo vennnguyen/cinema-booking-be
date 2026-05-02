@@ -82,9 +82,8 @@ const vnPayCallBack = async(req: Request, res: Response) => {
             paymentStatus:"PAID"
         }
     })
-    return res.status(201).json({
-        message: "Thanh toán thành công",
-        data: newPayment
-    })
+    return res.redirect(
+  `http://localhost:5173?vnp_ResponseCode=${vnp_ResponseCode}`
+);
 }
 export {createPayment,vnPayCallBack}

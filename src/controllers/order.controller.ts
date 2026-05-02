@@ -4,8 +4,8 @@ import { Request, Response } from "express";
 
 const createOrderController = async (req: Request, res: Response) => {
   try {
-    const {userId, totalPrice} = req.body
-    const order = await createOrderService(userId, totalPrice)
+    const {userId,showId, combos, seats} = req.body
+    const order = await createOrderService(userId,showId, combos, seats)
     if(!order) return res.status(401).json({message: "Tạo đơn hàng không thành công"})
     return res.status(201).json({
   message:"Tạo đơn hàng thành công",
