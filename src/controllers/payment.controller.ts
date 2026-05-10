@@ -1,4 +1,5 @@
 import prisma from "@/config/prisma";
+import { sendTicketEmail } from "@/helper/email.sender";
 import { randomUUID } from "crypto";
 import { Request, Response } from "express";
 import { VNPay, ignoreLogger, ProductCode, VnpLocale, dateFormat, HashAlgorithm } from "vnpay";
@@ -106,9 +107,78 @@ const vnPayCallBack = async (req: Request, res: Response) => {
             data: { status: "BOOKED" }
         })
     ]);
+     // Lấy thông tin để gửi mail
+  const fullOrder = await prisma.order.findUnique({
+    where: { orderId: Number(orderId) },
+    include: {
+      user: true,
+      orderdetail: {
+        include: {
+          ticket: {
+            include: {
+              showtimeseat: {
+                include: {
+                  seat: { include: { seattype: true } },
+                  showtime: {
+                    include: {
+                      movie: true,
+                      room: { include: { cinema: true, roomtype: true } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          combo: true,
+        },
+      },
+    },
+  });
+
+  if (fullOrder) {
+    const show = fullOrder.orderdetail[0]?.ticket?.showtimeseat?.showtime;
+    const ticketDetails = fullOrder.orderdetail
+      .filter(d => d.ticket)
+      .map(d => ({
+        seat: `${d.ticket!.showtimeseat.seat.seatRow}${d.ticket!.showtimeseat.seat.seatColumn}`,
+        ticketId: d.ticket!.ticketId,
+      }));
+
+    const combos = fullOrder.orderdetail
+      .filter(d => d.combo)
+      .map(d => ({
+        name: d.combo!.comboName,
+        quantity: d.quantity,
+        price: Number(d.unitPrice),
+      }));
+
+    await sendTicketEmail(fullOrder.user.email, {
+      userName: fullOrder.user.fullName,
+      movieName: show?.movie.movieName ?? "",
+      cinemaName: show?.room.cinema.cinemaName ?? "",
+      roomName: show?.room.roomName ?? "",
+      releaseDate: new Date(show?.releaseDate ?? "").toLocaleDateString("vi-VN"),
+      startTime: show?.startTime
+  ? (() => {
+      const d = new Date(show.startTime);
+      const hours = String(d.getHours()).padStart(2, "0");
+      const minutes = String(d.getMinutes()).padStart(2, "0");
+      return `${hours}:${minutes}`;
+    })()
+  : "",
+      seats: ticketDetails.map(t => t.seat),
+      combos,
+      totalPrice: Number(fullOrder.totalPrice),
+      ticketIds: ticketDetails.map(t => t.ticketId)
+    });
+  }
 
     return res.redirect(
         `http://localhost:5173?vnp_ResponseCode=${vnp_ResponseCode}`
     );
 };
 export {createPayment,vnPayCallBack}
+
+
+
+
