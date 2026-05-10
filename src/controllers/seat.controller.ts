@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getSeatByTheaterService } from "services/seat.service";
+import { getSeatByShowService } from "services/seat.service";
 
 const getSeatByTheaterController = async (req: Request, res: Response) => {
   try {
@@ -7,11 +7,11 @@ const getSeatByTheaterController = async (req: Request, res: Response) => {
 
     const id = Number(Array.isArray(idParam) ? idParam[0] : idParam);
 
-    if (isNaN(id)) {
+    if (isNaN(id) || id <= 0) {
       return res.status(400).json({ message: "Invalid id" });
     }
 
-    const data = await getSeatByTheaterService(id);
+    const data = await getSeatByShowService(id);
     if (data) {
       return res.status(200).json({ data });
     }

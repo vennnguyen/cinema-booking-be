@@ -52,38 +52,63 @@ if (!order) {
   });
 };
 
-const vnPayCallBack = async(req: Request, res: Response) => {
-    const {vnp_ResponseCode, vnp_TxnRef, vnp_TransactionNo, vnp_PayDate} = req.query
-    if(vnp_ResponseCode !== '00') {
-        throw new Error('Thanh toán thất bại')
+const vnPayCallBack = async (req: Request, res: Response) => {
+    const { vnp_ResponseCode, vnp_TxnRef, vnp_TransactionNo, vnp_PayDate } = req.query;
+    
+    if (vnp_ResponseCode !== '00') {
+        throw new Error('Thanh toán thất bại');
     }
+    
     const orderId = vnp_TxnRef?.toString().split("_")[0];
-    const findOderId = await prisma.order.findUnique({
-        where: {
-            orderId: Number(orderId)
+    
+    const findOrder = await prisma.order.findUnique({
+        where: { orderId: Number(orderId) },
+        include: {
+            orderdetail: {
+                include: {
+                    ticket: {
+                        include: {
+                            showtimeseat: true
+                        }
+                    }
+                }
+            }
         }
-    })
-    if(!findOderId) return res.status(404).json({message: "Không tìm thấy giỏ hàng"})
-        const newPayment = await prisma.payment.create({
-    data:{
-        orderId: findOderId.orderId,
-        method:"VNPAY",
-        amount:findOderId.totalPrice,
-        transactionId: vnp_TransactionNo?.toString(),
-        paidAt: formatVNPayDate(vnp_PayDate as string),
-        createdAt: new Date()
+    });
+    
+    if (!findOrder) return res.status(404).json({ message: "Không tìm thấy giỏ hàng" });
 
-    }})
-    const updateOrder = await prisma.order.update({
-        where: {
-            orderId: Number(orderId)
-        },
-        data: {
-            paymentStatus:"PAID"
-        }
-    })
+    // Lấy tất cả showTimeSeatId từ các ticket trong order
+    const showTimeSeatIds = findOrder.orderdetail
+        .filter(detail => detail.ticket !== null)
+        .map(detail => detail.ticket!.showTimeSeatId);
+
+    await prisma.$transaction([
+        prisma.payment.create({
+            data: {
+                orderId: findOrder.orderId,
+                method: "VNPAY",
+                amount: findOrder.totalPrice,
+                transactionId: vnp_TransactionNo?.toString(),
+                paidAt: formatVNPayDate(vnp_PayDate as string),
+                createdAt: new Date()
+            }
+        }),
+        prisma.order.update({
+            where: { orderId: Number(orderId) },
+            data: { paymentStatus: "PAID" }
+        }),
+        // Cập nhật tất cả ghế sang BOOKED
+        prisma.showtimeseat.updateMany({
+            where: {
+                showTimeSeatId: { in: showTimeSeatIds }
+            },
+            data: { status: "BOOKED" }
+        })
+    ]);
+
     return res.redirect(
-  `http://localhost:5173?vnp_ResponseCode=${vnp_ResponseCode}`
-);
-}
+        `http://localhost:5173?vnp_ResponseCode=${vnp_ResponseCode}`
+    );
+};
 export {createPayment,vnPayCallBack}
