@@ -158,13 +158,8 @@ const vnPayCallBack = async (req: Request, res: Response) => {
       cinemaName: show?.room.cinema.cinemaName ?? "",
       roomName: show?.room.roomName ?? "",
       releaseDate: new Date(show?.releaseDate ?? "").toLocaleDateString("vi-VN"),
-      startTime: show?.startTime
-  ? (() => {
-      const d = new Date(show.startTime);
-      const hours = String(d.getHours()).padStart(2, "0");
-      const minutes = String(d.getMinutes()).padStart(2, "0");
-      return `${hours}:${minutes}`;
-    })()
+      startTime:show?.startTime
+  ? new Date(show.startTime).toISOString().slice(11, 16)
   : "",
       seats: ticketDetails.map(t => t.seat),
       combos,

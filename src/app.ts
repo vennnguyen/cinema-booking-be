@@ -3,10 +3,14 @@ import "dotenv/config";
 import routes from "./routes";
 import cors from "cors";
 import cookieParser from 'cookie-parser'
-import { protectedRoute } from "./middlewares/auth.middleware";
+import { createServer } from "http"; 
+import { initSocket } from "./socket";      
 import authRoutes from 'routes/auth.route'
+import { startReleaseExpiredSeatsJob } from "./jobs/releaseExpiredSeats";
 const app = express();
 const PORT = process.env.PORT || 8080;
+const httpServer = createServer(app);
+initSocket(httpServer);
 //Lỗi CORS
 app.use(
   cors({
@@ -28,6 +32,7 @@ app.use("/api/auth", authRoutes);
 // routes
 
 app.use("/api", routes);
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
+  startReleaseExpiredSeatsJob();
 });

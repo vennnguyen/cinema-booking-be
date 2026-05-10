@@ -50,7 +50,7 @@ const createOrderService = async (userId:number, showId: number, combos: ComboIn
     throw new Error("Một số ghế không tồn tại trong suất chiếu này");
   }
 
-  const unavailable = showtimeSeats.filter(s => s.status !== "AVAILABLE");
+  const unavailable = showtimeSeats.filter(s => s.status === "BOOKED");
   if (unavailable.length > 0) {
     throw new Error(`Ghế đã được đặt hoặc đang giữ: ${unavailable.map(s => s.seatId).join(", ")}`);
   }

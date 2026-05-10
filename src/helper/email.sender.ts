@@ -188,7 +188,7 @@ export const sendTicketEmail = async (
           </p>
           <p style="margin:8px 0 20px;font-size:14px;color:#666;line-height:1.6">
             Cảm ơn bạn đã đặt vé. Dưới đây là thông tin vé của bạn. 
-            Vui lòng <strong>xuất trình mã QR</strong> khi đến rạp.
+            Vui lòng <strong>xuất trình vé</strong> khi đến rạp.
           </p>
         </div>
 
