@@ -263,3 +263,54 @@ export const sendTicketEmail = async (
     html,
   });
 };
+export const sendOTPEmail = async (to: string, otp: string) => {
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
+      <div style="background:#034ea2;padding:24px;text-align:center;border-radius:12px 12px 0 0">
+        <h1 style="color:white;margin:0;font-size:20px">🎬 CinemaX</h1>
+        <p style="color:#a8c4e8;margin:6px 0 0;font-size:13px">Xác thực đăng nhập</p>
+      </div>
+
+      <div style="background:white;padding:32px;border:1px solid #e8edf5;border-top:none">
+        <p style="color:#444;font-size:15px;margin:0 0 20px">
+          Mã OTP của bạn là:
+        </p>
+
+        <!-- OTP Box -->
+        <div style="text-align:center;margin:24px 0">
+          <div style="
+            display:inline-block;
+            background:#f0f4ff;
+            border:2px dashed #034ea2;
+            border-radius:12px;
+            padding:16px 40px;
+          ">
+            <span style="
+              font-size:36px;
+              font-weight:800;
+              letter-spacing:12px;
+              color:#034ea2;
+            ">${otp}</span>
+          </div>
+        </div>
+
+        <p style="color:#888;font-size:13px;text-align:center;margin:0">
+          Mã có hiệu lực trong <strong style="color:#f58020">5 phút</strong>.
+          Không chia sẻ mã này cho bất kỳ ai.
+        </p>
+      </div>
+
+      <div style="background:#f0f0f0;padding:14px;text-align:center;
+        font-size:12px;color:#999;border-radius:0 0 12px 12px">
+        Nếu bạn không yêu cầu mã này, hãy bỏ qua email này.
+      </div>
+    </div>
+  `;
+
+  await transporter.sendMail({
+    from: `"CinemaX 🎬" <${process.env.GMAIL_USER}>`,
+    to,
+    subject: `🔐 Mã OTP đăng nhập CinemaX: ${otp}`,
+    html,
+  });
+};

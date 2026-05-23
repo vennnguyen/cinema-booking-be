@@ -29,27 +29,27 @@ model combo {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model movie {
-  movieId        Int        @id @default(autoincrement())
+  movieId        Int          @id @default(autoincrement())
   movieTypeId    Int
-  movieName      String     @db.VarChar(1200)
-  description    String?    @db.Text
+  movieName      String       @db.VarChar(1200)
+  description    String?      @db.Text
   age            Int?
-  imageLandscape String?    @db.VarChar(500)
-  imagePortrait  String?    @db.VarChar(500)
+  imageLandscape String?      @db.VarChar(500)
+  imagePortrait  String?      @db.VarChar(500)
   rate           Float?
   totalVotes     Int?
-  startDate      DateTime?  @db.DateTime(0)
-  endDate        DateTime?  @db.DateTime(0)
-  slug           String?    @unique(map: "slug") @db.VarChar(100)
-  trailer        String?    @db.VarChar(500)
+  startDate      DateTime?    @db.DateTime(0)
+  endDate        DateTime?    @db.DateTime(0)
+  slug           String?      @unique(map: "slug") @db.VarChar(100)
+  trailer        String?      @db.VarChar(500)
   duration       Int
-  createdAt      DateTime?  @default(now()) @db.DateTime(0)
-  country        String?    @db.VarChar(200)
-  producer       String?    @db.VarChar(500)
-  director       String?    @db.VarChar(500)
+  createdAt      DateTime?    @default(now()) @db.DateTime(0)
+  country        String?      @db.VarChar(200)
+  producer       String?      @db.VarChar(500)
+  director       String?      @db.VarChar(500)
   actors         Json?
-  status         Boolean    @default(true)
-  movietype      movietype  @relation(fields: [movieTypeId], references: [movieTypeId], onDelete: NoAction, onUpdate: NoAction, map: "fk_movie_movietype")
+  status         movie_status @default(showing)
+  movietype      movietype    @relation(fields: [movieTypeId], references: [movieTypeId], onDelete: NoAction, onUpdate: NoAction, map: "fk_movie_movietype")
   showtime       showtime[]
 
   @@index([movieTypeId], map: "fk_movie_movietype")
@@ -298,4 +298,10 @@ enum user_role {
   ADMIN
   USER
   STAFF
+}
+
+enum movie_status {
+  showing
+  upcoming
+  ended
 }
