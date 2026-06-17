@@ -109,4 +109,65 @@ const createMovieService = async (
 
     return movie;
 };
-export { getProductService, getProductBySlugService, getMovies,createMovieService };
+const updateMovieService = async (
+    slug: string,
+    body: {
+        movieTypeId:  string;
+        movieName:    string;
+        description?: string;
+        age?:         string;
+        startDate?:   string;
+        endDate?:     string;
+        slug?:        string;
+        trailer?:     string;
+        duration:     string;
+        country?:     string;
+        producer?:    string;
+        director?:    string;
+        actors?:      string;
+        status:       "showing" | "upcoming" | "ended";
+    },
+    files: {
+        imagePortrait?:  Express.Multer.File[];
+        imageLandscape?: Express.Multer.File[];
+    }
+) => {
+    const existing = await prisma.movie.findUnique({ where: { slug } });
+    if (!existing) throw new Error("Phim không tồn tại");
+
+    const [imagePortraitUrl, imageLandscapeUrl] = await Promise.all([
+        files.imagePortrait?.[0]  ? uploadImage(files.imagePortrait[0])  : Promise.resolve(undefined),
+        files.imageLandscape?.[0] ? uploadImage(files.imageLandscape[0]) : Promise.resolve(undefined),
+    ]);
+
+    const updated = await prisma.movie.update({
+        where: { slug },
+        data: {
+            movieTypeId:    Number(body.movieTypeId),
+            movieName:      body.movieName,
+            description:    body.description    ?? existing.description,
+            age:            body.age !== undefined && body.age !== ""
+                                ? Number(body.age)
+                                : existing.age,
+            startDate:      body.startDate ? new Date(body.startDate) : existing.startDate,
+            endDate:        body.endDate   ? new Date(body.endDate)   : existing.endDate,
+            slug:           body.slug?.trim() || existing.slug,
+            trailer:        body.trailer        ?? existing.trailer,
+            duration:       Number(body.duration),
+            country:        body.country        ?? existing.country,
+            producer:       body.producer       ?? existing.producer,
+            director:       body.director       ?? existing.director,
+            actors: body.actors
+    ? body.actors.split(",").map((a) => a.trim())
+    : existing.actors ?? undefined, 
+            status:         body.status,
+            imagePortrait:  imagePortraitUrl  ?? existing.imagePortrait,
+            imageLandscape: imageLandscapeUrl ?? existing.imageLandscape,
+        },
+    });
+
+    return updated;
+};
+
+export { getProductService, getProductBySlugService, getMovies, createMovieService, updateMovieService };
+

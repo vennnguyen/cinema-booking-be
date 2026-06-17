@@ -3,6 +3,7 @@ import {
   createMovieController,
   getMoviesHandler,
   getProductBySlugController,
+  updateMovieController,
 
 } from "controllers/product.controller";
 import multer from "multer";
@@ -20,6 +21,10 @@ router.post(
     ]),
     createMovieController
 );
+router.put("/:slug", upload.fields([
+    { name: "imagePortrait",  maxCount: 1 },
+    { name: "imageLandscape", maxCount: 1 },
+]), updateMovieController);
 
 
 export default router;

@@ -22,7 +22,7 @@ router.use("/booking", protectedRoute, bookingRoutes);
 router.use("/seat", protectedRoute, seatRoutes);
 router.use("/order", orderRoutes)
 
-router.use("/me", protectedRoute,userRoutes)
+router.use("/users", protectedRoute,userRoutes)
 router.use("/payment", paymentRoutes)
 
 export default router;

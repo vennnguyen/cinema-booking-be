@@ -4,6 +4,7 @@ import {
   getMovies,
   getProductBySlugService,
   getProductService,
+  updateMovieService,
 } from "services/product.service";
 
 
@@ -107,6 +108,58 @@ const createMovieController = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: "Tạo phim thất bại" });
     }
 };
+const updateMovieController = async (req: Request, res: Response) => {
+    try {
+        const { slug } = req.params;
+        const { movieName, movieTypeId, duration, status, startDate, endDate, age } = req.body;
+
+        if (!movieName?.trim()) {
+            res.status(400).json({ success: false, message: "Tên phim là bắt buộc" });
+            return;
+        }
+        if (!movieTypeId || isNaN(Number(movieTypeId))) {
+            res.status(400).json({ success: false, message: "Thể loại phim là bắt buộc" });
+            return;
+        }
+        if (!duration || isNaN(Number(duration)) || Number(duration) < 1) {
+            res.status(400).json({ success: false, message: "Thời lượng phải lớn hơn 0" });
+            return;
+        }
+        if (!status || !["showing", "upcoming", "ended"].includes(status)) {
+            res.status(400).json({ success: false, message: "Trạng thái không hợp lệ" });
+            return;
+        }
+        if (!startDate || !endDate) {
+            res.status(400).json({ success: false, message: "Ngày bắt đầu và kết thúc là bắt buộc" });
+            return;
+        }
+        if (new Date(endDate) < new Date(startDate)) {
+            res.status(400).json({ success: false, message: "Ngày kết thúc phải sau ngày bắt đầu" });
+            return;
+        }
+        if (age !== undefined && age !== "" && (isNaN(Number(age)) || Number(age) < 0)) {
+            res.status(400).json({ success: false, message: "Độ tuổi không hợp lệ" });
+            return;
+        }
+
+        const files = req.files as Record<string, Express.Multer.File[]>;
+
+        const updated = await updateMovieService(slug as string, req.body, {
+            imagePortrait:  files?.imagePortrait,
+            imageLandscape: files?.imageLandscape,
+        });
+
+        res.status(200).json({ success: true, data: updated });
+    } catch (error: any) {
+        if (error.message === "Phim không tồn tại") {
+            res.status(404).json({ success: false, message: error.message });
+            return;
+        }
+        console.error("updateMovie error:", error);
+        res.status(500).json({ success: false, message: "Cập nhật phim thất bại" });
+    }
+};
+
+export { getProductController, getProductBySlugController, createMovieController, getMoviesHandler, updateMovieController };
 
 
-export { getProductController, getProductBySlugController,createMovieController,getMoviesHandler };
